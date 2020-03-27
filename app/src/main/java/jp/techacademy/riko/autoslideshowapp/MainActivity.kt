@@ -9,7 +9,9 @@ import android.util.Log
 import android.provider.MediaStore
 import android.content.ContentUris
 import android.database.Cursor
+import android.os.Handler
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -17,6 +19,14 @@ class MainActivity : AppCompatActivity() {
     private val PERMISSIONS_REQUEST_CODE = 100
 
     private var cursor: Cursor? = null
+
+    private var mTimer: Timer? = null
+
+    // タイマー用の時間のための変数
+    private var mTimerSec = 0.0
+
+    private var mHandler = Handler()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,20 +95,18 @@ class MainActivity : AppCompatActivity() {
                     ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
 
                 imageView.setImageURI(imageUri)
-            }
-            else
-                // indexからIDを取得し、そのIDから画像のURIを取得する
+            } else
+            // indexからIDを取得し、そのIDから画像のURIを取得する
             {
-                val toLast = cursor!!.moveToLast()
+                val toLast = cursor!!.moveToFirst()
                 val fieldIndex = cursor!!.getColumnIndex(MediaStore.Images.Media._ID)
-                    val id = cursor!!.getLong(fieldIndex)
-                    val imageUri =
-                        ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
+                val id = cursor!!.getLong(fieldIndex)
+                val imageUri =
+                    ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
+                imageView.setImageURI(imageUri)
 
-
-                    cursor!!.moveToFirst()
-                }
             }
+        }
 
 
         back_button.setOnClickListener {
@@ -111,20 +119,68 @@ class MainActivity : AppCompatActivity() {
 
                 imageView.setImageURI(imageUri)
 
-                }
-            else // indexからIDを取得し、そのIDから画像のURIを取得する
+            } else // indexからIDを取得し、そのIDから画像のURIを取得する
             {
-                val toLast = cursor!!.moveToFirst()
+                val toLast = cursor!!.moveToLast()
                 val fieldIndex = cursor!!.getColumnIndex(MediaStore.Images.Media._ID)
                 val id = cursor!!.getLong(fieldIndex)
                 val imageUri =
                     ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
-
-
-                cursor!!.moveToLast()
+                imageView.setImageURI(imageUri)
             }
-            }
-            }
-
         }
 
+        start_stop_button.setOnClickListener {
+            if (mTimer == null) {
+                mTimer = Timer()
+                mTimer!!.schedule(object : TimerTask() {
+                    override fun run() {
+                        mHandler.post {
+                            if (cursor!!.moveToNext()) {
+                                val fieldIndex =
+                                    cursor!!.getColumnIndex(MediaStore.Images.Media._ID)
+                                val id = cursor!!.getLong(fieldIndex)
+                                val imageUri =
+                                    ContentUris.withAppendedId(
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                        id
+                                    )
+
+                                imageView.setImageURI(imageUri)
+                            } else
+                            // indexからIDを取得し、そのIDから画像のURIを取得する
+                            {
+                                val toLast = cursor!!.moveToFirst()
+                                val fieldIndex =
+                                    cursor!!.getColumnIndex(MediaStore.Images.Media._ID)
+                                val id = cursor!!.getLong(fieldIndex)
+                                val imageUri =
+                                    ContentUris.withAppendedId(
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                        id
+                                    )
+                                imageView.setImageURI(imageUri)
+
+                            }
+                        }
+                    }
+                }, 2000, 2000)
+
+                move_button.isClickable = false
+                back_button.isClickable = false
+
+                start_stop_button.text = "停止"
+            } else {
+                mTimer!!.cancel()
+                mTimer = null
+
+                move_button.isClickable = true
+                back_button.isClickable = true
+
+                start_stop_button.text = "再生"
+            }
+
+
+        }
+    }
+}
