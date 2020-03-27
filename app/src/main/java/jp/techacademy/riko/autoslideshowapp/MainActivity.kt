@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getContentsInfo() {
-        // 画像の情報を取得する
+        /* 画像の情報を取得する */
         val resolver = contentResolver
         cursor = resolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI, // データの種類
@@ -95,10 +95,8 @@ class MainActivity : AppCompatActivity() {
                     ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
 
                 imageView.setImageURI(imageUri)
-            } else
-            // indexからIDを取得し、そのIDから画像のURIを取得する
+            } else (cursor!!.moveToFirst())
             {
-                val toLast = cursor!!.moveToFirst()
                 val fieldIndex = cursor!!.getColumnIndex(MediaStore.Images.Media._ID)
                 val id = cursor!!.getLong(fieldIndex)
                 val imageUri =
@@ -119,9 +117,8 @@ class MainActivity : AppCompatActivity() {
 
                 imageView.setImageURI(imageUri)
 
-            } else // indexからIDを取得し、そのIDから画像のURIを取得する
+            } else (cursor!!.moveToLast())
             {
-                val toLast = cursor!!.moveToLast()
                 val fieldIndex = cursor!!.getColumnIndex(MediaStore.Images.Media._ID)
                 val id = cursor!!.getLong(fieldIndex)
                 val imageUri =
@@ -147,10 +144,8 @@ class MainActivity : AppCompatActivity() {
                                     )
 
                                 imageView.setImageURI(imageUri)
-                            } else
-                            // indexからIDを取得し、そのIDから画像のURIを取得する
+                            } else (cursor!!.moveToFirst())
                             {
-                                val toLast = cursor!!.moveToFirst()
                                 val fieldIndex =
                                     cursor!!.getColumnIndex(MediaStore.Images.Media._ID)
                                 val id = cursor!!.getLong(fieldIndex)
